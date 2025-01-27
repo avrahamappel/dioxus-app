@@ -11,20 +11,51 @@ fn App() -> Element {
     rsx! {
         document::Stylesheet { href: CSS }
 
-        div { id: "title",
-            h1 { "HotDog! 🌭" }
-        }
-        div { id: "dogview",
-            img { src: "https://images.dog.ceo/breeds/pitbull/dog-3981540_1280.jpg" }
-        }
-        div { id: "buttons",
-            button { id: "skip", "skip" }
-            button { id: "save", "save!" }
-        }
+        Title {}
+        DogView {}
     }
 }
 
 #[component]
-fn DogApp(breed: String) -> Element {
-    rsx! { "Breed: {breed}" }
+fn Title() -> Element {
+    rsx! {
+        div { id: "title",
+            h1 { "HotDog! 🌭" }
+        }
+    }
+}
+
+#[derive(serde::Deserialize)]
+struct DogApi {
+    message: String,
+}
+
+#[component]
+fn DogView() -> Element {
+    let mut dog_img_src = use_resource(|| async move {
+        reqwest::get("https://dog.ceo/api/breeds/image/random")
+            .await
+            .unwrap()
+            .json::<DogApi>()
+            .await
+            .unwrap()
+            .message
+    });
+
+    let skip = move |_| {
+        dog_img_src.restart();
+    };
+    let save = move |_| {
+        dog_img_src.restart();
+    };
+
+    rsx! {
+        div { id: "dogview",
+            img { src: dog_img_src.cloned().unwrap_or_default() }
+        }
+        div { id: "buttons",
+            button { onclick: skip, id: "skip", "skip" }
+            button { onclick: save, id: "save", "save!" }
+        }
+    }
 }
