@@ -25,13 +25,13 @@
 
         naersk' = pkgs.callPackage naersk { };
 
-        baseToolchain = (pkgs.fenix.stable.withComponents [
+        baseToolchain = pkgs.fenix.stable.withComponents [
           "cargo"
           "clippy"
           "llvm-tools"
           "rustc"
           "rustfmt"
-        ]);
+        ];
 
         targetToolchain = pkgs.fenix.combine [
           baseToolchain
@@ -40,7 +40,6 @@
             sha256 = "sha256-lMLAupxng4Fd9F1oDw8gx+qA0RuF7ou7xhNU8wgs0PU=";
           })
         ];
-
       in
       {
         defaultPackage = naersk'.buildPackage {
@@ -49,9 +48,9 @@
 
         devShell = pkgs.mkShell {
           nativeBuildInputs = with pkgs; [
-            alejandra
             rust-analyzer
             targetToolchain
+            dioxus-cli
           ];
         };
       }
