@@ -8,22 +8,41 @@
     fenix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = {
-    self,
-    flake-utils,
-    naersk,
-    nixpkgs,
-    fenix,
-  }:
+  outputs =
+    { flake-utils
+    , naersk
+    , nixpkgs
+    , fenix
+    , ...
+    }:
     flake-utils.lib.eachDefaultSystem (
-      system: let
+      system:
+      let
         pkgs = (import nixpkgs) {
           inherit system;
-          overlays = [fenix.overlays.default];
+          overlays = [ fenix.overlays.default ];
         };
 
-        naersk' = pkgs.callPackage naersk {};
-      in rec {
+        naersk' = pkgs.callPackage naersk { };
+
+        baseToolchain = (pkgs.fenix.stable.withComponents [
+          "cargo"
+          "clippy"
+          "llvm-tools"
+          "rustc"
+          "rustfmt"
+        ]);
+
+        targetToolchain = pkgs.fenix.combine [
+          baseToolchain
+          (pkgs.fenix.fromToolchainFile {
+            dir = ./.;
+            sha256 = "sha256-lMLAupxng4Fd9F1oDw8gx+qA0RuF7ou7xhNU8wgs0PU=";
+          })
+        ];
+
+      in
+      {
         defaultPackage = naersk'.buildPackage {
           src = ./.;
         };
@@ -32,13 +51,7 @@
           nativeBuildInputs = with pkgs; [
             alejandra
             rust-analyzer
-            (pkgs.fenix.stable.withComponents [
-              "cargo"
-              "clippy"
-              "rust-src"
-              "rustc"
-              "rustfmt"
-            ])
+            targetToolchain
           ];
         };
       }
