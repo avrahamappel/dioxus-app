@@ -53,6 +53,10 @@
             dioxus-cli
             pkg-config
             openssl
+            gtk3
+            libsoup_3
+            webkitgtk_4_1
+            xdotool
           ];
         };
       }
