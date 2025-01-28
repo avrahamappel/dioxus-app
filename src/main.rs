@@ -7,6 +7,8 @@ enum Route {
     #[layout(NavBar)]
     #[route("/")]
     DogView,
+    #[route("/favorites")]
+    Favorites,
 }
 
 fn main() {
@@ -27,8 +29,9 @@ fn NavBar() -> Element {
     rsx! {
         div { id: "title",
             Link { to: Route::DogView,
-                h1 { "HotDog! 🌭" }
+                h1 { "🌭 HotDog!" }
             }
+            Link { to: Route::Favorites, id: "heart", "♥️" }
         }
         Outlet::<Route> {}
     }
@@ -71,7 +74,29 @@ fn DogView() -> Element {
     }
 }
 
+#[component]
+fn Favorites() -> Element {
+    let dogs = use_resource(get_dogs).suspend()?;
+
+    rsx! {
+        div { id: "favorites",
+            div { id: "favorites-container",
+                for (idx, dog) in dogs().unwrap() {
+                    img { key: idx, class: "favorite-dog", src: "{dog}" }
+                }
+            }
+        }
+    }
+}
+
 // Server functions
+
+#[server]
+async fn get_dogs() -> Result<Vec<(usize, String)>, ServerFnError> {
+    let file = std::fs::read_to_string("dogs.txt").unwrap();
+    let dogs = file.lines().map(|s| s.to_string()).enumerate().collect();
+    Ok(dogs)
+}
 
 #[server]
 async fn save_dog(image: String) -> Result<(), ServerFnError> {
