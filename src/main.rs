@@ -2,6 +2,13 @@ use dioxus::prelude::*;
 
 static CSS: Asset = asset!("/assets/main.css");
 
+#[derive(Routable, Clone, PartialEq)]
+enum Route {
+    #[layout(NavBar)]
+    #[route("/")]
+    DogView,
+}
+
 fn main() {
     dioxus::launch(App);
 }
@@ -11,17 +18,19 @@ fn App() -> Element {
     rsx! {
         document::Stylesheet { href: CSS }
 
-        Title {}
-        DogView {}
+        Router::<Route> {}
     }
 }
 
 #[component]
-fn Title() -> Element {
+fn NavBar() -> Element {
     rsx! {
         div { id: "title",
-            h1 { "HotDog! 🌭" }
+            Link { to: Route::DogView,
+                h1 { "HotDog! 🌭" }
+            }
         }
+        Outlet::<Route> {}
     }
 }
 
