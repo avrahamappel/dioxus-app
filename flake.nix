@@ -51,6 +51,8 @@
             rust-analyzer
             targetToolchain
             dioxus-cli
+            pkg-config
+            openssl
           ];
         };
       }
